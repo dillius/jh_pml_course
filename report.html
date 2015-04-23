@@ -1,11 +1,29 @@
 <html>
 	<body>
-		<h2>Analysis of Data and Feature Creation</h2><br />
+		<h2>Analysis of Data and Feature Creation</h2>
 		<p>
-			Inititally we must review the data we have in the domain it exists for and determine our first level covariate creation.
+			Upon analysis of the data the most immediate issue is the large number of covariates with almost no data at all in them. An initial analysis done with:
+			<br />
+				<pre>nsv = nearZeroVar(pmltraining,saveMetrics=TRUE)</pre>
+			<br />
+			Show a significant number varaibles with little actual data in them. More analysis by counting the number of NA and empty entries in each columns shows that many of these variables are not populated in even as much as 1% of the data:
+			<br />
+				<pre>colSums(is.na(training))</pre>
+				<pre>colSums(training=="")</pre>
+			<br />
+			This provides us with some very simple cleanup we can perform on the covariates provided by removing these items that would not provide any useful input into the model. Our training set has 19217 records, so if we find any columns with greater than 19000 NA or empty values we remove them from consideration.
+			<br />
+				<pre>training1<-training[,colSums(!is.na(training))>19000]</pre>
+				<pre>training2<-training1[,colSums(training1!="")>19000]</pre>
+			<br />
+			Looking at this reduced data set we also find a number of fields that are simply pointless to analyze: username, timestamps, and the like. We remove these values manually.
+			<br />
+				<pre>training3 <- training2[,8:60]</pre>
+			<br />
 		</p>
+		<h2>Training a Model</h2>
 		<p>
-			Once we have created our initial covariates we need to analyze potential transformations to perform on them to create more useful features.
+			It has been recommended to use the Random Forest training method when training our models for the sake of performance. The normal training methods have taken some students an entire night of waiting to complete, which is impractical. Random Forest also has a high accuracy rate, which will benefit us in a scenario in which we need to get things right on the first try.
 		</p>
 	</body>
 </html>

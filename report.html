@@ -20,10 +20,38 @@
 			<br />
 				<pre>training3 <- training2[,8:60]</pre>
 			<br />
+			Finally, we look to determine highly correlated values in the training set so we can remove these somewhat duplicate pieces of information.
+			<br />
+				<pre>M <- abs(cor(training3[,-53]))</pre>
+				<pre>diag(M) <- 0</pre>
+				<pre>which(M > 0.8,arr.ind=T)</pre>
+			<br />
+			This provides us with a number of columns which we then concatenate into a list and remove from the training data
+			<br />
+				<pre>training4 <- training3[,!(names(training3) %in% drops)]</pre>
 		</p>
 		<h2>Training a Model</h2>
 		<p>
 			It has been recommended to use the Random Forest training method when training our models for the sake of performance. The normal training methods have taken some students an entire night of waiting to complete, which is impractical. Random Forest also has a high accuracy rate, which will benefit us in a scenario in which we need to get things right on the first try.
+		<br />
+			We will train a model using Random Forest for the method, with additional controls to include cross validation as a part of the training. First we specify these additional controls:
+		<br />
+			<pre>tc <- trainControl("repeatedcv", number=3, repeats=2) </pre>
+		<br />
+			We also perform some pre-processing on our remaining variables to center and scale the values we are going to use for training the model.
+		<br />
+			<pre>preProcValues <- preProcess(training4, method = c("center", "scale"))</pre>
+			<pre>traininingTransformed <- predict(preProcValues, training4)</pre>
+			<pre>testingTransformed <- predict(preProcValues, testing)</pre>
+		<br />
+			We then train our model using the Random Forest method and our now normalized data:
+		<br />
+			<pre>model <- train(classe ~., data=trainingTransformed, method="rf", trControl=tc)</pre>
+		<br />
+			Once our model is complete, we can predict the values from the testing data (remembering to use our preprocessed testing data):
+		<br />
+			<pre>answers <- predict(model, testingTransformed)</pre>
+		<br />
 		</p>
 	</body>
 </html>

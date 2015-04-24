@@ -1,0 +1,65 @@
+library(caret)
+options(max.print=100)
+training = read.csv("pml-training.csv")
+
+
+!!!!!There are a bunch of worthless columns
+nsv = nearZeroVar(pmltraining,saveMetrics=TRUE)
+colSums(is.na(training))
+
+
+training1<-training[,colSums(!is.na(training))>19000]
+training2<-training1[,colSums(training1!="")>19000]
+training3 <- training2[,8:60]
+
+
+!!!TODO: NEED TO REMOVE STRONGLY CORRELATED VARIABLES
+M <- abs(cor(training3[,-53]))
+diag(M) <- 0
+which(M > 0.8,arr.ind=T)
+
+drops <- c("accel_belt_x","accel_belt_y","accel_belt_z","gyros_dumbbell_x","gyros_dumbbell_z","gyros_arm_y","yaw_belt","total_accel_belt","magnet_belt_x","magnet_arm_x","magnet_arm_z","accel_dumbbell_x","accel_dumbbell_z","gyros_forearm_y")
+training4 <- training3[,!(names(training3) %in% drops)]
+
+
+//smalltraining = head(training, 200)
+
+inTrain<-createDataPartition(y=training4$classe,p=0.1,list=FALSE)
+smalltraining<-training4[inTrain,]
+
+
+
+
+pmltraining2 <- apply(pmltraining, 2, as.numeric)
+pmltraining2[is.na(pmltraining2)] <- 0
+prComp <- prcomp(pmltraining2)
+
+
+
+
+train()
+Method: RF, CV
+model<-train(classe~.,data=smalltraining,method="rf",trControl=trainControl(method="cv",number=3),allowParallel=TRUE)
+
+preProcValues <- preProcess(training4, method = c("center", "scale"))
+traininingTransformed <- predict(preProcValues, training3)
+testingTransformed <- predict(preProcValues, testing)
+
+tc <- trainControl("repeatedcv", number=10, repeats=10) 
+//model <- train(classe ~., data=training3, method="rf", trControl=tc, preProc=c("center", "scale"))
+model <- train(classe ~., data=trainingTransformed, method="rf", trControl=tc)
+
+
+
+as.data.frame.matrix(mytable) 
+Or just as.data.frame(mytable). (is.matrix(mytable) will reveal that tables really are just dressed up matrices, and as.data.frame.matrix is the method that gets dispatched when as.data.frame() is passed a matrix argument.) 
+
+
+
+
+> system.time(model_rf             <- train(classe ~ ., data = training, method = "rf"))
+    user   system  elapsed 
+  37.307    5.551 1051.359 
+> system.time(model_rf             <- randomForest(classe ~ ., data = training))
+   user  system elapsed 
+ 25.232   0.153  25.641

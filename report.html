@@ -36,9 +36,9 @@
 		<br />
 			We will train a model using Random Forest for the method, with additional controls to include cross validation as a part of the training. First we specify these additional controls:
 		<br />
-			<pre>tc <- trainControl("repeatedcv", number=3, repeats=2) </pre>
+			<pre>tc <- trainControl("cv", number=5) </pre>
 		<br />
-			We also perform some pre-processing on our remaining variables to center and scale the values we are going to use for training the model.
+			We also perform some pre-processing on our remaining variables to center and scale the values we are going to use for training the model. We go ahead and apply the preprocessing to the testing data as well as the training, as this will need to be in this form to be run against our model later.
 		<br />
 			<pre>preProcValues <- preProcess(training4, method = c("center", "scale"))</pre>
 			<pre>traininingTransformed <- predict(preProcValues, training4)</pre>
@@ -48,10 +48,37 @@
 		<br />
 			<pre>model <- train(classe ~., data=trainingTransformed, method="rf", trControl=tc)</pre>
 		<br />
+			Our model shows the following accuracy when cross validated:
+<pre>
+Random Forest
+
+19622 samples
+   23 predictor
+    5 classes: 'A', 'B', 'C', 'D', 'E'
+
+No pre-processing
+Resampling: Cross-Validated (5 fold)
+
+Summary of sample sizes: 15699, 15697, 15699, 15696, 15697
+
+Resampling results across tuning parameters:
+
+  mtry  Accuracy   Kappa      Accuracy SD  Kappa SD
+   2    0.9772705  0.9712413  0.001157613  0.001468325
+  13    0.9724287  0.9651197  0.001017273  0.001287926
+  24    0.9657013  0.9566112  0.002476771  0.003138826
+
+Accuracy was used to select the optimal model using  the largest value.
+The final value used for the model was mtry = 2.
+</pre>
+		<br />
+			We are led to expected a 97.7% Accuracy rating from this model.
+		<br />
 			Once our model is complete, we can predict the values from the testing data (remembering to use our preprocessed testing data):
 		<br />
 			<pre>answers <- predict(model, testingTransformed)</pre>
 		<br />
+			In the end when the twenty test problems are submitted we have correctly predicted 19/20, indicating a 95% accuracy rate in real use. Initial thoughts as to the failure to achieve a higher accuracy rate is likely due to having removed a highly correlated feature that may have provided a distinct point of analysis for this specific scenario.
 		</p>
 	</body>
 </html>
